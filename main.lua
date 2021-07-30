@@ -26,9 +26,7 @@ end
 deli:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, deli.SaveGame)
 
 function deli:OnGameStart(isSave)
-	if defaultsChanged then
-		deli:SaveGame()
-	end	
+	deli:SaveGame()
 	
     if deli:HasData() then	
 		SaveState = json.decode(deli:LoadData())	
@@ -36,7 +34,6 @@ function deli:OnGameStart(isSave)
         for i, v in pairs(SaveState.Settings) do
 			deliSettings[tostring(i)] = SaveState.Settings[i]
 		end
-
     end
 end
 deli:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, deli.OnGameStart)
