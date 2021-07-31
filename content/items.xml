@@ -1,0 +1,9 @@
+<items gfxroot="gfx/items/" version="1">
+	<active
+		name="Delierio Clicker"
+		description="Delierio's special clicker"
+		gfx="delierioclicker.png"
+		hidden="true"
+		chargetype="timed"
+		maxcharges="150" />
+</items>
