@@ -36,6 +36,9 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
+function del:clicker(_item, _rng, player)
+	print(_item, _rng, player)
+	
 validPlayerTypes = {}
 
 function del:clicker(_item, _rng, player)
@@ -45,12 +48,12 @@ function del:clicker(_item, _rng, player)
 	player:AddCollectible (delClickerID, 0, false, ActiveSlot.SLOT_POCKET)
 	
 	print(player:GetName())
-	
+  
 	return true --Play clicker animation
 end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID, rng:RandomInt(18))
 
-
+ 
 ----------------------------------------------------------------
 ----------------------------Savedata----------------------------
 
