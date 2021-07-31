@@ -1,3 +1,5 @@
+<!-- Hardcoded clicker may cause issues with mod compatability  -->
+<!-- Pocket must added before player init else slot becomes inactive  -->
 <players root="gfx/characters/costumes/" 
          portraitroot="gfx/ui/stage/" 
          nameimageroot="gfx/ui/boss/">
@@ -6,6 +8,7 @@
           skin="character_delierio.png"
           hp="6"
           bombs="1"
+		  pocketActive="730"
           nameimage="PlayerName_01_Isaac.png"
           portrait="PlayerPortrait_01_Isaac.png"
           skinColor="-1"
