@@ -36,19 +36,24 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
-function del:clicker(_item, _rng, player)
-	print(_item, _rng, player)
-	
 validPlayerTypes = {}
 
 function del:clicker(_item, _rng, player)
-	print(_item, _rng, player)
+	--print(_item, _rng, player)
 	
 	player:ChangePlayerType(rng:RandomInt(17))
 	player:AddCollectible (delClickerID, 0, false, ActiveSlot.SLOT_POCKET)
 	
-	print(player:GetName())
-  
+	print("                                 Player: "..player:GetName())
+	
+	playersprite = player:GetSprite()
+	playersprite:Load("001.000_player.anm2", true)
+	for i = 0, 15 do
+		playersprite:ReplaceSpritesheet(i, "gfx/characters/costumes/character_delierio.png")
+	end
+	playersprite:LoadGraphics()
+	
+	
 	return true --Play clicker animation
 end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID, rng:RandomInt(18))
