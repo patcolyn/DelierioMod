@@ -1,64 +1,10 @@
 ----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
 
+require("scripts.playerTables")
+
 local del = RegisterMod("delierio", 1)
-local rng = RNG() --RNG is non-inclusive
 local SaveState = {}
-
-
-----------------------------------------------------------------
---------------------------Default-Settings----------------------
-
-local modSettings = {
-	
-}
-
-
-----------------------------------------------------------------
--------------------------------Init-----------------------------
-
-delClickerID = Isaac.GetItemIdByName("Delierio Clicker")
-
-function del:delInit()
-
-end
-
-
-----------------------------------------------------------------
-------------------------------Start-----------------------------
-
-function del:onGameStart()
-	local player  = Isaac.GetPlayer(0)
-	if player:GetName() == "Delierio" then
-		del:delInit()
-	end
-end
-del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
-
-
-----------------------------------------------------------------
------------------------------Clicker----------------------------
---[[
-local validPlayerTypes = {
-	dIsaac = 0,
-	dMagdalene = 1,
-	dCain = 2,
-	dJudas = 3,
-	dBlueBaby = 4,
-	dEve = 5,
-	dSamson = 6,
-	dAzazel = 7,
-	dLazarus = 8,
-	dEden = 9,
-	dTheLost = 10,
-	dLillith = 13,
-	dKeeper = 14,
-	dApollyon = 15,
-	dTheForgotten = 16,
-	dBethany = 18,
-	dJacob = 19
-}
---]]
 
 local validPlayerTypes = {
 	0,
@@ -97,50 +43,100 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_apollyon.png",
 	"gfx/characters/costumes/character_theforgotten.png",
 	"gfx/characters/costumes/character_bethany.png",
-	"gfx/characters/costumes/character_jacob.png",
+	"gfx/characters/costumes/character_jacob.png"
 }
 
-function del:clicker(_item, _rng, player)
-	local currentPlayerType = player:GetPlayerType()
+----------------------------------------------------------------
+--------------------------Default-Settings----------------------
 
-	local index = {} -- Making index of validPlayerTypes
-	for v, k in pairs(validPlayerTypes) do
-		index[k] = v
+local modSettings = {
+	
+}
+
+
+----------------------------------------------------------------
+-------------------------------Init-----------------------------
+
+local delClickerID = Isaac.GetItemIdByName("Delierio Clicker")
+
+--[[
+function del:delInit()
+
+end
+]]--
+
+----------------------------------------------------------------
+------------------------------Start-----------------------------
+
+--[[
+function del:onGameStart()
+	local player  = Isaac.GetPlayer(0)
+	if player:GetName() == "Delierio" then
+		del:delInit()
 	end
+end
+del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
+]]--
 
-	for i = 1, 17 do
-		if currentPlayerType == validPlayerTypes[i] then
-			table.remove(validPlayerTypes, validPlayerTypes[i]) -- Removing currently selected character as a possible transformation
-		end
-	end
+----------------------------------------------------------------
+-----------------------------Clicker----------------------------
+--[[
+local validPlayerTypes = {
+	dIsaac = 0,
+	dMagdalene = 1,
+	dCain = 2,
+	dJudas = 3,
+	dBlueBaby = 4,
+	dEve = 5,
+	dSamson = 6,
+	dAzazel = 7,
+	dLazarus = 8,
+	dEden = 9,
+	dTheLost = 10,
+	dLillith = 13,
+	dKeeper = 14,
+	dApollyon = 15,
+	dTheForgotten = 16,
+	dBethany = 18,
+	dJacob = 19
+}
+--]]
 
-	local randomIntFromTable = rng:RandomInt(#validPlayerTypes) -- Storing randomly chosen position from validPlayerTypes in randomIntFromTable
-	local randomPlayerType = validPlayerTypes[randomIntFromTable] -- Storing chosen playerType in randomPlayerType
 
-	player:ChangePlayerType(randomPlayerType) -- Changing PlayerType to a random validPlayerType
-	player:AddCollectible (delClickerID, 0, false, ActiveSlot.SLOT_POCKET) -- Adding Delierio Clicker to the transformed-into character as a pocket active
-
-	table.insert(validPlayerTypes, index[currentPlayerType], currentPlayerType) -- Reinserting randomly selected character into the table
+function del:clicker(_type, rng, player)
+	
+	--current and target playerTypes: int
+	local currentPlayer = player:GetPlayerType()
+	local targetPlayer = validPlayerTypes[del:returnPlayer(currentPlayer, rng)]
+	
+	player:ChangePlayerType(targetPlayer) --Call clicker function with target
+	player:AddCollectible(delClickerID, 0, false, ActiveSlot.SLOT_POCKET)
 
 	print("                                 Player: "..player:GetName()) -- Print who the player transformed into
-
-	local playerSprite = player:GetSprite() -- Storing GetSprite() as a var for easier use
-	playerSprite:Load("001.000_player.anm2", true) -- Loading player animations for changing spritesheet
 	
-	for i = 1, 17 do
-		if randomPlayerType == validPlayerTypes[i] then -- Checking which character the player turned into
-			for ii = 0, 15 do -- Repeating 16 times for each player animation
-				playerSprite:ReplaceSpritesheet(ii, spriteSheetLocations[i]) -- Replacing spritesheet for every animation
-			end
-		end
+	local playerSprite = player:GetSprite()
+	playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
+	
+	for i = 0, 15 do
+		playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer]) --Replace spritesheets
 	end
 
-	playerSprite:LoadGraphics() -- Refreshing the graphics to load the new spritesheet
-	return true -- Play clicker animation
-end
-del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID, rng:RandomInt(18))
+	playerSprite:LoadGraphics() --Reload sprites
 
- 
+	return true --Play clicker animation
+end
+del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID)
+
+--Return random character, excluding 
+--Uwi, this is magic, but can touchy
+function del:returnPlayer(exclude, rng)
+	if rng:RandomInt(#validPlayerTypes) + 1 == exclude then
+		return del:returnPlayer(exclude, rng)
+	end
+	return rng:RandomInt(#validPlayerTypes) + 1
+end
+
+
 ----------------------------------------------------------------
 ----------------------------Savedata----------------------------
 
@@ -172,3 +168,15 @@ function del:loadData(isSave)
     end
 end
 del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.loadData)
+
+----------------------------------------------------------------
+---------------------------Functions----------------------------
+
+function table.contains(table, element)
+  for _, value in pairs(table) do
+    if value == element then
+      return true
+    end
+  end
+  return false
+end

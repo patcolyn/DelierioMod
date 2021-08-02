@@ -35,7 +35,7 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_apollyon.png",
 	"gfx/characters/costumes/character_theforgotten.png",
 	"gfx/characters/costumes/character_bethany.png",
-	"gfx/characters/costumes/character_jacob.png",
+	"gfx/characters/costumes/character_jacob.png"
 }
 
-return tables
+return playerTables
