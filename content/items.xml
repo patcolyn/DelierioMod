@@ -5,5 +5,5 @@
 		gfx="delierioclicker_ferpe_placeholder.png"
 		hidden="true"
 		chargetype="timed"
-		maxcharges="150" />
+		maxcharges="1" />
 </items>

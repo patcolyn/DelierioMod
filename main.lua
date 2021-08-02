@@ -18,6 +18,7 @@ local validPlayerTypes = {
 	8,
 	9,
 	10,
+	11,
 	13,
 	14,
 	15,
@@ -38,6 +39,7 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_lazarus.png",
 	"gfx/characters/costumes/character_eden.png",
 	"gfx/characters/costumes/character_thelost.png",
+	"gfx/characters/costumes/character_lazarus2.png",
 	"gfx/characters/costumes/character_lillith.png",
 	"gfx/characters/costumes/character_keeper.png",
 	"gfx/characters/costumes/character_apollyon.png",
@@ -68,52 +70,31 @@ end
 ----------------------------------------------------------------
 ------------------------------Start-----------------------------
 
---[[
+
 function del:onGameStart()
-	local player  = Isaac.GetPlayer(0)
-	if player:GetName() == "Delierio" then
-		del:delInit()
-	end
+	lazAlive = true
 end
 del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
-]]--
+
 
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
---[[
-local validPlayerTypes = {
-	dIsaac = 0,
-	dMagdalene = 1,
-	dCain = 2,
-	dJudas = 3,
-	dBlueBaby = 4,
-	dEve = 5,
-	dSamson = 6,
-	dAzazel = 7,
-	dLazarus = 8,
-	dEden = 9,
-	dTheLost = 10,
-	dLillith = 13,
-	dKeeper = 14,
-	dApollyon = 15,
-	dTheForgotten = 16,
-	dBethany = 18,
-	dJacob = 19
-}
---]]
-
 
 function del:clicker(_type, rng, player)
 	
 	--current and target playerTypes: int
 	local currentPlayer = player:GetPlayerType()
-	local targetPlayer = validPlayerTypes[del:returnPlayer(currentPlayer, rng)]
+
+	lazExcludeID = PlayerType.PLAYER_LAZARUS2 and lazAlive or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
+	print(lazExcludeID)
+	local targetPlayer = validPlayerTypes[del:returnPlayer({currentPlayer, lazExcludeID}, rng)]
 	
 	player:ChangePlayerType(targetPlayer) --Call clicker function with target
 	player:AddCollectible(delClickerID, 0, false, ActiveSlot.SLOT_POCKET)
 
-	print("                                 Player: "..player:GetName()) -- Print who the player transformed into
+	print("Player: "..player:GetName()) -- Print who the player transformed into
 	
+	--[[
 	local playerSprite = player:GetSprite()
 	playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
 	
@@ -122,19 +103,32 @@ function del:clicker(_type, rng, player)
 	end
 
 	playerSprite:LoadGraphics() --Reload sprites
+	]]--
 
 	return true --Play clicker animation
 end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID)
 
---Return random character, excluding 
+--Return random character, excluding
+--RNG is non-inclusive 
 --Uwi, this is magic, but can touchy
 function del:returnPlayer(exclude, rng)
-	if rng:RandomInt(#validPlayerTypes) + 1 == exclude then
+	roll = rng:RandomInt(#validPlayerTypes) + 1
+	if table.contains(exclude, roll) then
 		return del:returnPlayer(exclude, rng)
+	else
+		return roll
 	end
-	return rng:RandomInt(#validPlayerTypes) + 1
 end
+
+
+local lazAlive = true
+function del:lazarusCheck(player)
+	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS then 
+		lazAlive = false
+	end
+end
+del:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, del.lazarusCheck, EntityType.ENTITY_PLAYER)
 
 
 ----------------------------------------------------------------
