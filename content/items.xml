@@ -2,7 +2,7 @@
 	<active
 		name="Delierio Clicker"
 		description="Delierio's special clicker"
-		gfx="delierioclicker.png"
+		gfx="delierioclicker_ferpe_placeholder.png"
 		hidden="true"
 		chargetype="timed"
 		maxcharges="150" />
