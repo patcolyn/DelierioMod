@@ -1,8 +1,4 @@
 ----------------------------------------------------------------
--------------------------Importing-Tables-----------------------
-local tables = require("tables")
-
-----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
 
 local del = RegisterMod("delierio", 1)
@@ -105,16 +101,26 @@ local spriteSheetLocations = {
 }
 
 function del:clicker(_item, _rng, player)
-	--print(_item, _rng, player)
+	local currentPlayerType = player:GetPlayerType()
+
+	local index = {} -- Making index of validPlayerTypes
+	for v, k in pairs(validPlayerTypes) do
+		index[k] = v
+	end
+
+	for i = 1, 17 do
+		if currentPlayerType == validPlayerTypes[i] then
+			table.remove(validPlayerTypes, validPlayerTypes[i]) -- Removing currently selected character as a possible transformation
+		end
+	end
+
 	local randomIntFromTable = rng:RandomInt(#validPlayerTypes) -- Storing randomly chosen position from validPlayerTypes in randomIntFromTable
 	local randomPlayerType = validPlayerTypes[randomIntFromTable] -- Storing chosen playerType in randomPlayerType
-
-	table.remove(validPlayerTypes, randomIntFromTable)
 
 	player:ChangePlayerType(randomPlayerType) -- Changing PlayerType to a random validPlayerType
 	player:AddCollectible (delClickerID, 0, false, ActiveSlot.SLOT_POCKET) -- Adding Delierio Clicker to the transformed-into character as a pocket active
 
-	table.insert(validPlayerTypes, randomIntFromTable, randomPlayerType)
+	table.insert(validPlayerTypes, index[currentPlayerType], currentPlayerType) -- Reinserting randomly selected character into the table
 
 	print("                                 Player: "..player:GetName()) -- Print who the player transformed into
 
