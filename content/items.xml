@@ -1,8 +1,8 @@
 <items gfxroot="gfx/items/" version="1">
 	<active
-		name="Delierio Clicker"
+		name="Dysmorphia"
 		description="Delierio's special clicker"
-		gfx="delierioclicker_ferpe_placeholder.png"
+		gfx="dysmorphia.png"
 		hidden="true"
 		chargetype="timed"
 		maxcharges="1" />
