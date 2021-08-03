@@ -1,6 +1,10 @@
 --[[
 TODO: Remove all player starting items from all pools
-TODO: 
+TODO: Health tracker
+TODO: Fix item acquisition on change
+TODO: translate player position to forgotten's body, currently at soul
+TODO: Keeper spawning flies from red removal
+TODO: Extra Esau bug
 ]]--
 ----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
@@ -65,7 +69,6 @@ local modSettings = {
 -------------------------------Init-----------------------------
 
 COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
-print(COLLECTIBLE_DYSMORPHIA)
 
 --[[
 function del:delInit()
@@ -80,7 +83,7 @@ end
 function del:onGameStart()
 	lazAlive = true
 end
-del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
+del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 
 ----------------------------------------------------------------
@@ -91,9 +94,15 @@ function del:dysmorphia(_type, rng, player)
 	--current and target playerTypes: int
 	local currentPlayer = player:GetPlayerType()
 	
+	lazExcludeID = PlayerType.PLAYER_LAZARUS
+	if lazAlive then
+		lazExcludeID = PlayerType.PLAYER_LAZARUS2
+	end
+
 	if currentPlayer ~= PlayerType.PLAYER_ESAU then
-		local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS2 or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
-		local roll = del:returnPlayer({currentPlayer, lazExcludeID}, rng)
+		
+		local roll = table.random({currentPlayer, lazExcludeID}, rng)
+		print(lazAlive, lazExcludeID)
 		
 		local targetPlayer = validPlayerTypes[roll + 1]
 		
@@ -119,25 +128,14 @@ end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 
---Return random character
---RNG is non-inclusive 
---Uwi, this is magic, but can touchy
-function del:returnPlayer(exclude, rng)
-	local roll = rng:RandomInt(#validPlayerTypes)
-	if table.contains(exclude, roll) then
-		return del:returnPlayer(exclude, rng)
-	else
-		return roll
-	end
-end
-
-
-local lazAlive = true
-function del:lazarusCheck(player)
+lazAlive = true
+function del:lazarusCheck(player, dmg)
 	player = player:ToPlayer() --cast Entity to EntityPlayer
 	hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
-	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp == 1 then 
+	print(dmg)
+	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmg == 0 then 
 		lazAlive = false
+		print("ded", lazAlive)
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.ENTITY_PLAYER)
@@ -186,4 +184,16 @@ function table.contains(table, element)
     end
   end
   return false
+end
+
+--Return random character
+--RNG is non-inclusive 
+--Uwi, this is magic, but can touchy
+function table.random(exclude, rng)
+	local roll = rng:RandomInt(#validPlayerTypes)
+	if table.contains(exclude, roll) then
+		return table.random(exclude, rng)
+	else
+		return roll
+	end
 end
