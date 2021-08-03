@@ -1,3 +1,7 @@
+--[[
+TODO: Remove all player starting items from all pools
+
+]]--
 ----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
 
@@ -48,6 +52,7 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_jacob.png"
 }
 
+
 ----------------------------------------------------------------
 --------------------------Default-Settings----------------------
 
@@ -59,7 +64,8 @@ local modSettings = {
 ----------------------------------------------------------------
 -------------------------------Init-----------------------------
 
-local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Delierio Clicker")
+CollectibleType.COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Delierio Clicker")
+print(CollectibleType.COLLECTIBLE_DYSMORPHIA)
 
 --[[
 function del:delInit()
@@ -67,9 +73,9 @@ function del:delInit()
 end
 ]]--
 
+
 ----------------------------------------------------------------
 ------------------------------Start-----------------------------
-
 
 function del:onGameStart()
 	lazAlive = true
@@ -80,20 +86,21 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
+local currentPlayer = Isaac.GetPlayer():GetPlayerType()
 function del:dysmorphia(_type, rng, player)
 	
 	--current and target playerTypes: int
-	local currentPlayer = player:GetPlayerType()
+	currentPlayer = player:GetPlayerType()
 
-	local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS or PlayerType.PLAYER_LAZARUS2 --Return inactive lazarus ID
-	print(lazExcludeID)
-	local targetPlayer = validPlayerTypes[del:returnPlayer({currentPlayer, lazExcludeID}, rng)]
+	local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS2 or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
+	local roll = del:returnPlayer({currentPlayer, lazExcludeID}, rng)
+	
+	local targetPlayer = validPlayerTypes[roll + 1]
 	
 	player:ChangePlayerType(targetPlayer) --Call clicker function with target
-	player:AddCollectible(COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
-
-	print("Player: "..player:GetName()) -- Print who the player transformed into
+	player:AddCollectible(CollectibleType.COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
 	
+	print("From: " .. currentPlayer .. " To: " .. targetPlayer)
 	--[[
 	local playerSprite = player:GetSprite()
 	playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
@@ -107,13 +114,14 @@ function del:dysmorphia(_type, rng, player)
 
 	return true --Play pick up animation
 end
-del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
+del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, CollectibleType.COLLECTIBLE_DYSMORPHIA)
 
---Return random character, excluding
+
+--Return random character
 --RNG is non-inclusive 
 --Uwi, this is magic, but can touchy
 function del:returnPlayer(exclude, rng)
-	local roll = rng:RandomInt(#validPlayerTypes) + 1
+	local roll = rng:RandomInt(#validPlayerTypes)
 	if table.contains(exclude, roll) then
 		return del:returnPlayer(exclude, rng)
 	else
@@ -124,11 +132,13 @@ end
 
 local lazAlive = true
 function del:lazarusCheck(player)
-	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS then 
+	player = player:ToPlayer() --cast Entity to EntityPlayer
+	hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
+	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp == 1 then 
 		lazAlive = false
 	end
 end
-del:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, del.lazarusCheck, EntityType.ENTITY_PLAYER)
+del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.ENTITY_PLAYER)
 
 
 ----------------------------------------------------------------
@@ -162,6 +172,7 @@ function del:loadData(isSave)
     end
 end
 del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.loadData)
+
 
 ----------------------------------------------------------------
 ---------------------------Functions----------------------------
