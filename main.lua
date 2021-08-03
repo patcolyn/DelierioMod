@@ -59,7 +59,7 @@ local modSettings = {
 ----------------------------------------------------------------
 -------------------------------Init-----------------------------
 
-local delClickerID = Isaac.GetItemIdByName("Delierio Clicker")
+local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Delierio Clicker")
 
 --[[
 function del:delInit()
@@ -80,17 +80,17 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
-function del:clicker(_type, rng, player)
+function del:dysmorphia(_type, rng, player)
 	
 	--current and target playerTypes: int
 	local currentPlayer = player:GetPlayerType()
 
-	local lazExcludeID = PlayerType.PLAYER_LAZARUS2 and lazAlive or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
+	local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS or PlayerType.PLAYER_LAZARUS2 --Return inactive lazarus ID
 	print(lazExcludeID)
 	local targetPlayer = validPlayerTypes[del:returnPlayer({currentPlayer, lazExcludeID}, rng)]
 	
 	player:ChangePlayerType(targetPlayer) --Call clicker function with target
-	player:AddCollectible(delClickerID, 0, false, ActiveSlot.SLOT_POCKET)
+	player:AddCollectible(COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
 
 	print("Player: "..player:GetName()) -- Print who the player transformed into
 	
@@ -105,9 +105,9 @@ function del:clicker(_type, rng, player)
 	playerSprite:LoadGraphics() --Reload sprites
 	]]--
 
-	return true --Play clicker animation
+	return true --Play pick up animation
 end
-del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID)
+del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 --Return random character, excluding
 --RNG is non-inclusive 
