@@ -9,6 +9,8 @@ TODO: Extra Esau bug
 ----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
 
+_debug = true
+
 require("scripts.playerTables")
 
 local del = RegisterMod("delierio", 1)
@@ -91,26 +93,26 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 function del:dysmorphia(_type, rng, player)
 	
-	--current and target playerTypes: int
 	local currentPlayer = player:GetPlayerType()
+	local currentPlayerName = player:GetName()
 	
+	--Lazarus' Rags check
 	lazExcludeID = PlayerType.PLAYER_LAZARUS
 	if lazAlive then
 		lazExcludeID = PlayerType.PLAYER_LAZARUS2
 	end
-
-	if currentPlayer ~= PlayerType.PLAYER_ESAU then
-		
-		local roll = table.random({currentPlayer, lazExcludeID}, rng)
-		print(lazAlive, lazExcludeID)
-		
-		local targetPlayer = validPlayerTypes[roll + 1]
+	
+	if currentPlayer ~= PlayerType.PLAYER_ESAU then --Esau is rolled for too for SOME REASON
+		local targetPlayer = table.random(validPlayerTypes, {currentPlayer, lazExcludeID}, rng)
 		
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
 		--player:AddCollectible(COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
 		
-		print("From: " .. currentPlayer .. " To: " .. targetPlayer)
-
+		
+		targetPlayerName = player:GetName()
+		print("From: " .. currentPlayerName .. " To: " .. targetPlayerName)
+		if currentPlayer == targetPlayer then print("AGHHHHHHHHHHHHHHH") end
+		
 		--[[
 		local playerSprite = player:GetSprite()
 		playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
@@ -132,10 +134,8 @@ lazAlive = true
 function del:lazarusCheck(player, dmg)
 	player = player:ToPlayer() --cast Entity to EntityPlayer
 	hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
-	print(dmg)
 	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmg == 0 then 
 		lazAlive = false
-		print("ded", lazAlive)
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.ENTITY_PLAYER)
@@ -177,6 +177,7 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.loadData)
 ----------------------------------------------------------------
 ---------------------------Functions----------------------------
 
+--Returns if an element is in a table
 function table.contains(table, element)
   for _, value in pairs(table) do
     if value == element then
@@ -186,14 +187,13 @@ function table.contains(table, element)
   return false
 end
 
---Return random character
---RNG is non-inclusive 
---Uwi, this is magic, but can touchy
-function table.random(exclude, rng)
-	local roll = rng:RandomInt(#validPlayerTypes)
-	if table.contains(exclude, roll) then
-		return table.random(exclude, rng)
+--Returns a random element in a table
+function table.random(randTable, exclude, rng)
+	roll = rng:RandomInt(#randTable) + 1
+	
+	if table.contains(exclude, randTable[roll]) then
+		return table.random(randTable, exclude, rng)
 	else
-		return roll
+		return randTable[roll]
 	end
 end
