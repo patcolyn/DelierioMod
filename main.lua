@@ -1,6 +1,6 @@
 --[[
 TODO: Remove all player starting items from all pools
-
+TODO: 
 ]]--
 ----------------------------------------------------------------
 -----------------------Registering-Variables--------------------
@@ -64,8 +64,8 @@ local modSettings = {
 ----------------------------------------------------------------
 -------------------------------Init-----------------------------
 
-CollectibleType.COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Delierio Clicker")
-print(CollectibleType.COLLECTIBLE_DYSMORPHIA)
+COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
+print(COLLECTIBLE_DYSMORPHIA)
 
 --[[
 function del:delInit()
@@ -86,35 +86,37 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
-local currentPlayer = Isaac.GetPlayer():GetPlayerType()
 function del:dysmorphia(_type, rng, player)
 	
 	--current and target playerTypes: int
-	currentPlayer = player:GetPlayerType()
+	local currentPlayer = player:GetPlayerType()
+	
+	if currentPlayer ~= PlayerType.PLAYER_ESAU then
+		local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS2 or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
+		local roll = del:returnPlayer({currentPlayer, lazExcludeID}, rng)
+		
+		local targetPlayer = validPlayerTypes[roll + 1]
+		
+		player:ChangePlayerType(targetPlayer) --Call clicker function with target
+		--player:AddCollectible(COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
+		
+		print("From: " .. currentPlayer .. " To: " .. targetPlayer)
 
-	local lazExcludeID =  lazAlive and PlayerType.PLAYER_LAZARUS2 or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
-	local roll = del:returnPlayer({currentPlayer, lazExcludeID}, rng)
-	
-	local targetPlayer = validPlayerTypes[roll + 1]
-	
-	player:ChangePlayerType(targetPlayer) --Call clicker function with target
-	player:AddCollectible(CollectibleType.COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
-	
-	print("From: " .. currentPlayer .. " To: " .. targetPlayer)
-	--[[
-	local playerSprite = player:GetSprite()
-	playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
-	
-	for i = 0, 15 do
-		playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer]) --Replace spritesheets
+		--[[
+		local playerSprite = player:GetSprite()
+		playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
+		
+		for i = 0, 15 do
+			playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer]) --Replace spritesheets
+		end
+
+		playerSprite:LoadGraphics() --Reload sprites
+		]]--
+
+		return true --Play pick up animation
 	end
-
-	playerSprite:LoadGraphics() --Reload sprites
-	]]--
-
-	return true --Play pick up animation
 end
-del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, CollectibleType.COLLECTIBLE_DYSMORPHIA)
+del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 
 --Return random character

@@ -295,16 +295,15 @@
 		skinColor="-1"
 		birthright="What's yours is mine"
 		pocketActive="730" />
-	<player 
+	<player
 		id="20"
 		name="Esau"
 		skin="Character_003x_Esau.png"
 		costume="53"
-		hp="2" armor="2"
+		hp="2"
+		armor="2"
 		achievement="-2"
 		nameimage="PlayerName_02x_Jacob_Esau.png" 
-		portrait="PlayerPortrait_Jacob.png"
-		skinColor="3"
-		birthright="What's yours is mine"
-		pocketActive="730" />
+		portrait="PlayerPortrait_Jacob.png" skinColor="3"
+		birthright="What's yours is mine" />  
 </players>
