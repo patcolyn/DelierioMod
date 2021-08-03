@@ -4,12 +4,9 @@ TODO: Health tracker
 TODO: Fix item acquisition on change
 TODO: translate player position to forgotten's body, currently at soul
 TODO: Keeper spawning flies from red removal
-TODO: Extra Esau bug
 ]]--
 ----------------------------------------------------------------
------------------------Registering-Variables--------------------
-
-_debug = true
+------------------------------Init------------------------------
 
 require("scripts.playerTables")
 
@@ -68,18 +65,6 @@ local modSettings = {
 
 
 ----------------------------------------------------------------
--------------------------------Init-----------------------------
-
-COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
-
---[[
-function del:delInit()
-
-end
-]]--
-
-
-----------------------------------------------------------------
 ------------------------------Start-----------------------------
 
 function del:onGameStart()
@@ -90,6 +75,8 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
+
+local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
 
 function del:dysmorphia(_type, rng, player)
 	
@@ -106,12 +93,10 @@ function del:dysmorphia(_type, rng, player)
 		local targetPlayer = table.random(validPlayerTypes, {currentPlayer, lazExcludeID}, rng)
 		
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
-		--player:AddCollectible(COLLECTIBLE_DYSMORPHIA, 0, false, ActiveSlot.SLOT_POCKET)
-		
 		
 		targetPlayerName = player:GetName()
 		print("From: " .. currentPlayerName .. " To: " .. targetPlayerName)
-		if currentPlayer == targetPlayer then print("AGHHHHHHHHHHHHHHH") end
+		if currentPlayer == targetPlayer then print("AGHHHHHHHHHHHHHHH") end --Please never trigger, I am going mad
 		
 		--[[
 		local playerSprite = player:GetSprite()
@@ -130,11 +115,12 @@ end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 
-lazAlive = true
-function del:lazarusCheck(player, dmg)
-	player = player:ToPlayer() --cast Entity to EntityPlayer
-	hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
-	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmg == 0 then 
+local lazAlive = true
+function del:lazarusCheck(player, dmgAmount)
+	local player = player:ToPlayer() --cast Entity to EntityPlayer
+	local hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
+
+	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmgAmount == 0 then 
 		lazAlive = false
 	end
 end
@@ -146,23 +132,22 @@ del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.EN
 
 local json = require("json")
 
-function del:SaveGame()
 --Saves gamedata to /The Binding of Isaac Rebirth/data/delerio
-
+function del:SaveGame()
 	SaveState.Settings = {}
 	
 	for i, v in pairs(modSettings) do
 		SaveState.Settings[tostring(i)] = modSettings[i]
 	end
+	
     del:SaveData(json.encode(SaveState))
 end
 
 del:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, del.SaveGame)
 
 
-function del:loadData(isSave)
 --Loads gamedata from /The Binding of Isaac Rebirth/data/delerio
-	
+function del:loadData(isSave)
     if del:HasData() then	
 		SaveState = json.decode(del:LoadData())	
 		
@@ -179,13 +164,14 @@ del:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, del.loadData)
 
 --Returns if an element is in a table
 function table.contains(table, element)
-  for _, value in pairs(table) do
-    if value == element then
-      return true
-    end
-  end
-  return false
+	for _, value in pairs(table) do
+		if value == element then
+			return true
+		end
+	end
+	return false
 end
+
 
 --Returns a random element in a table
 function table.random(randTable, exclude, rng)
