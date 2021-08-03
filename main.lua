@@ -85,7 +85,7 @@ function del:clicker(_type, rng, player)
 	--current and target playerTypes: int
 	local currentPlayer = player:GetPlayerType()
 
-	lazExcludeID = PlayerType.PLAYER_LAZARUS2 and lazAlive or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
+	local lazExcludeID = PlayerType.PLAYER_LAZARUS2 and lazAlive or PlayerType.PLAYER_LAZARUS --Return inactive lazarus ID
 	print(lazExcludeID)
 	local targetPlayer = validPlayerTypes[del:returnPlayer({currentPlayer, lazExcludeID}, rng)]
 	
@@ -113,7 +113,7 @@ del:AddCallback(ModCallbacks.MC_USE_ITEM, del.clicker, delClickerID)
 --RNG is non-inclusive 
 --Uwi, this is magic, but can touchy
 function del:returnPlayer(exclude, rng)
-	roll = rng:RandomInt(#validPlayerTypes) + 1
+	local roll = rng:RandomInt(#validPlayerTypes) + 1
 	if table.contains(exclude, roll) then
 		return del:returnPlayer(exclude, rng)
 	else
