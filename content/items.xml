@@ -4,6 +4,6 @@
 		description="Delierio's special clicker"
 		gfx="dysmorphia.png"
 		hidden="true"
-		chargetype="timed"
+		chargetype="special"
 		maxcharges="100" />
 </items>

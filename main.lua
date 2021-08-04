@@ -1,13 +1,13 @@
---[[
-TODO: Remove all player starting items from all pools
+--[[ Ordered in priority
+TODO: Ramping clicker damage
 TODO: Health tracker
 TODO: Fix item acquisition on change
+TODO: Remove all player starting items from all pools
+TODO: Fix all non-Delierio characters
+TODO: Settings save across runs
 TODO: Keeper spawning flies from red heart removal
 TODO: Dysmorphia dmg type similar to Breath of Life
-TODO: settings save across runs
-TODO: Fix all non-Delierio characters
 TODO: Player grid trapped check
-TODO: Ramping clicker damage
 ]]--
 ----------------------------------------------------------------
 ------------------------------Init------------------------------
@@ -59,11 +59,14 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_jacob.png"
 }
 
+local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
 local defaultCooldown = 5*30
 local dysmorphiaCooldown = defaultCooldown --Delay in seconds for damage
 local dysmorphiaTimer = defaultCooldown
+local dysmorphiaMaxCharges = Isaac.GetItemConfig():GetCollectible(COLLECTIBLE_DYSMORPHIA).MaxCharges
 
 local lazAlive = true
+
 
 ----------------------------------------------------------------
 --------------------------Default-Settings----------------------
@@ -90,8 +93,7 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
-local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
-
+--Main dysmorphia functionality
 function del:dysmorphia(_type, rng, player)
 	
 	local currentPlayer = player:GetPlayerType()
@@ -131,19 +133,18 @@ end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 
+--Dysmorphia damage effect
 function del:dysmorphiaDamage()
 	local player = Isaac.GetPlayer(0)
 	
 	--Start damage countdown at full charge
-	if player:GetActiveCharge(ActiveSlot.SLOT_POCKET) == Isaac.GetItemConfig():GetCollectible(COLLECTIBLE_DYSMORPHIA).MaxCharges then
+	if player:GetActiveCharge(ActiveSlot.SLOT_POCKET) == dysmorphiaMaxCharges then
 		
-		dysmorphiaTimer = (dysmorphiaTimer - 1) % (dysmorphiaCooldown) --increment, wrap on damage
-		print(dysmorphiaTimer)
-		
-		
+		dysmorphiaTimer = (dysmorphiaTimer - 1) % (dysmorphiaCooldown) --increment, wrap on damage		
 		
 		local sound = SoundEffect.SOUND_HUSH_GROWL
 		local volume = 0.3
+
 		--TODO: Ugly if chain, FIX
 		if dysmorphiaTimer == 80 then
 			SFXManager():Play(sound, volume, 0, false, 1.5, 0)
@@ -167,16 +168,36 @@ end
 del:AddCallback(ModCallbacks.MC_POST_UPDATE, del.dysmorphiaDamage) --30/second
 
 
+--Allows Lazarus types to swap in-place
 function del:lazarusCheck(entity, dmgAmount, flags, source)
-	local player = entity:ToPlayer() --cast Entity to EntityPlayer
-	local hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
-
+	local player = entity:ToPlayer() --Cast Entity to EntityPlayer
+	local hp = player:GetHearts() + player:GetSoulHearts() 
+	
+	--Health reduction applied after MC_ENTITY_TAKE_DMG
 	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmgAmount == 0 then 
 		lazAlive = false
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.ENTITY_PLAYER)
 
+
+--4.5v effect based on damage AMOUNT, exclusive for Dysmorphia
+function del:dysmorphiaCharge(entity, dmgAmount, flags, source)
+	local player = Isaac.GetPlayer(0)
+	
+	if source.Type < 10 and player:GetActiveCharge(ActiveSlot.SLOT_POCKET) ~= dysmorphiaMaxCharges then
+		--[[
+		TODO:
+		Account for overkill dmg
+		Clamp to maxcharges
+		Scale based on amount of damage dealt
+		]]--
+		local newCharge = player:GetActiveCharge(ActiveSlot.SLOT_POCKET) + math.floor(dmgAmount) + 10 * Game():GetLevel():GetStage() 
+
+		player:SetActiveCharge(newCharge, ActiveSlot.SLOT_POCKET)
+	end
+end
+del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
 
 ----------------------------------------------------------------
 ----------------------------Savedata----------------------------
