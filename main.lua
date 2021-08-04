@@ -8,7 +8,6 @@ TODO: Lazarus2 Anemic effect persistent across switching
 
 TODO: Settings save across runs
 
-TODO: Dysmorphia foors and rocks switch
 TODO: Keeper spawning flies from red heart removal
 
 TODO: Prevent vanilla completion marks
@@ -178,7 +177,6 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 function del:dysmorphia(_type, rng, player)
 	--buildGrid(Game():GetRoom())
 	
-	
 	local currentPlayer = player:GetPlayerType()
 	local currentPlayerName = player:GetName()
 	
@@ -332,7 +330,7 @@ end
 
 --Returns a random element in a table
 function table.random(randTable, exclude, rng)
-	roll = rng:RandomInt(#randTable) + 1
+	local roll = rng:RandomInt(#randTable) + 1
 	
 	if table.contains(exclude, randTable[roll]) then
 		return table.random(randTable, exclude, rng)
