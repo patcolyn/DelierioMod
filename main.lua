@@ -1,11 +1,14 @@
 --[[ Ordered in priority
-TODO: Ramping clicker damage
 TODO: Health tracker
 TODO: Fix item acquisition on change
 TODO: Remove all player starting items from all pools
 TODO: Fix all non-Delierio characters
+
 TODO: Settings save across runs
+
+TODO: Dysmorphia foors and rocks switch
 TODO: Keeper spawning flies from red heart removal
+
 TODO: Prevent vanilla completion marks
 TODO: Dysmorphia dmg type similar to Breath of Life
 TODO: Player grid trapped check
@@ -37,6 +40,26 @@ local playerTypeWhitelist = {
 	PlayerType.PLAYER_THEFORGOTTEN,
 	PlayerType.PLAYER_BETHANY,
 	PlayerType.PLAYER_JACOB
+}
+
+backDropList = {}
+for i = 1, 60 do
+	backDropList[i] = i
+end
+
+backDropBlacklist = {
+	BackdropType.BACKDROP_NULL,
+	BackdropType.MEGA_SATAN,
+	BackdropType.ERROR_ROOM,
+	BackdropType.DUNGEON,
+	BackdropType.PLANETARIUM,
+	BackdropType.CLOSET,
+	BackdropType.CLOSET_B,
+	BackdropType.DOGMA,
+	BackdropType.DUNGEON_GIDEON,
+	BackdropType.DUNGEON_ROTGUT,
+	BackdropType.MINES_SHAFT,
+	BackdropType.ASHPIT_SHAFT
 }
 
 --TODO: redo as for-loop
@@ -99,6 +122,8 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
 
+testroom = 61
+
 --Main dysmorphia functionality
 function del:dysmorphia(_type, rng, player)
 	
@@ -117,7 +142,7 @@ function del:dysmorphia(_type, rng, player)
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
 		
 		targetPlayerName = player:GetName()
-		print("From: " .. currentPlayerName .. " To: " .. targetPlayerName)
+		--print("From: " .. currentPlayerName .. " To: " .. targetPlayerName)
 		if currentPlayer == targetPlayer then print("AGHHHHHHHHHHHHHHH") end --Please never trigger, I am going mad
 		
 		--[[
@@ -132,6 +157,9 @@ function del:dysmorphia(_type, rng, player)
 		]]--
 		
 		dysmorphiaTimer = defaultCooldown
+		
+		--Screen effects
+		Game():ShowHallucination(3, table.random(backDropList, backDropBlacklist, rng))
 		
 		return true --Play pick up animation
 	end
@@ -167,7 +195,7 @@ function del:dysmorphiaDamage()
 			SFXManager():Play(sound, volume, 0, false, 5, 0)
 
 		elseif dysmorphiaTimer == 0 then
-			player:TakeDamage(1.0, 0, EntityRef(player), 0) --Take damage from self
+			--player:TakeDamage(1.0, 0, EntityRef(player), 0) --Take damage from self
 		end
 	end
 end
@@ -264,4 +292,4 @@ end
 --Clamps a value to given range
 function math.clamp(n, low, high)
 	return math.min(math.max(n, low), high)
-end 
+end
