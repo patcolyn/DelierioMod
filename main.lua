@@ -176,6 +176,8 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 --Main dysmorphia functionality
 function del:dysmorphia(_type, rng, player)
+	--buildGrid(Game():GetRoom())
+	
 	
 	local currentPlayer = player:GetPlayerType()
 	local currentPlayerName = player:GetName()
@@ -209,7 +211,7 @@ function del:dysmorphia(_type, rng, player)
 		dysmorphiaTimer = defaultCooldown
 		
 		--Screen effects
-		Game():ShowHallucination(3, table.random(backDropList, backDropBlacklist, rng))
+		Game():Darken(0.9, 20)
 		
 		return true --Play pick up animation
 	end
