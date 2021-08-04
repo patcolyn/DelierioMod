@@ -4,6 +4,8 @@ TODO: Fix item acquisition on change
 TODO: Remove all player starting items from all pools
 TODO: Fix all non-Delierio characters
 
+TODO: Lazarus2 Anemic effect persistent across switching
+
 TODO: Settings save across runs
 
 TODO: Dysmorphia foors and rocks switch
@@ -87,6 +89,54 @@ local spriteSheetLocations = {
 local chargeEntityBlacklist = {
 	EntityType.ENTITY_FIREPLACE,
 	EntityType.ENTITY_SHOPKEEPER
+}
+
+local startingItems = {
+	PLAYER_ISAAC = {
+		CollectibleType.COLLECTIBLE_D6
+	},
+	PLAYER_MAGDALENA = {
+		CollectibleType.COLLECTIBLE_YUM_HEART
+	},
+	PLAYER_CAIN = {
+		CollectibleType.COLLECTIBLE_LUCKY_FOOT,
+		TrinketType.TRINKET_PAPER_CLIP
+	},
+	PLAYER_JUDAS = {
+		CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL
+	},
+	PLAYER_XXX = {
+		CollectibleType.COLLECTIBLE_POOP
+	},
+	PLAYER_EVE = {
+		CollectibleType.COLLECTIBLE_WHORE_OF_BABYLON,
+		CollectibleType.COLLECTIBLE_DEAD_BIRD,
+		CollectibleType.COLLECTIBLE_RAZOR_BLADE
+	},
+	PLAYER_SAMSON = {
+		CollectibleType.COLLECTIBLE_BLOODY_LUST,
+		TrinketType.TRINKET_CHILDS_HEART
+	},
+	PLAYER_AZAZEL = {},
+	PLAYER_LAZARUS = {
+		CollectibleType.COLLECTIBLE_ANEMIC
+	},
+	PLAYER_EDEN = {"AGGGHHHH"},
+	PLAYER_THELOST = {
+		CollectibleType.COLLECTIBLE_ETERNAL_D6
+	},
+	PLAYER_LAZARUS2 = {},
+	PLAYER_LILITH = {
+		CollectibleType.COLLECTIBLE_CAMBION_CONCEPTION,
+		CollectibleType.COLLECTIBLE_BOX_OF_FRIENDS
+	},
+	PLAYER_KEEPER = {},
+	PLAYER_APOLLYON = {},
+	PLAYER_THEFORGOTTEN = {},
+	PLAYER_BETHANY = {
+		CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES
+	},
+	PLAYER_JACOB = {}
 }
 
 local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
