@@ -2,8 +2,12 @@
 TODO: Remove all player starting items from all pools
 TODO: Health tracker
 TODO: Fix item acquisition on change
-TODO: translate player position to forgotten's body, currently at soul
-TODO: Keeper spawning flies from red removal
+TODO: Keeper spawning flies from red heart removal
+TODO: Dysmorphia dmg type similar to Breath of Life
+TODO: settings save across runs
+TODO: Fix all non-Delierio characters
+TODO: Player grid trapped check
+TODO: Ramping clicker damage
 ]]--
 ----------------------------------------------------------------
 ------------------------------Init------------------------------
@@ -55,20 +59,30 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_jacob.png"
 }
 
+local defaultCooldown = 5*30
+local dysmorphiaCooldown = defaultCooldown --Delay in seconds for damage
+local dysmorphiaTimer = defaultCooldown
+
+local lazAlive = true
 
 ----------------------------------------------------------------
 --------------------------Default-Settings----------------------
 
-local modSettings = {
-	
+local defaultSettings = {
+	["lazAlive"] = true,
+	["dysmorphiaCooldown"] = defaultCooldown,
+	["dysmorphiaTimer"] = defaultCooldown
 }
 
+local runVariables = defaultSettings
 
 ----------------------------------------------------------------
 ------------------------------Start-----------------------------
 
 function del:onGameStart()
+	
 	lazAlive = true
+	dysmorphiaTimer = defaultCooldown
 end
 del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
@@ -108,16 +122,53 @@ function del:dysmorphia(_type, rng, player)
 
 		playerSprite:LoadGraphics() --Reload sprites
 		]]--
-
+		
+		dysmorphiaTimer = defaultCooldown
+		
 		return true --Play pick up animation
 	end
 end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
 
 
-local lazAlive = true
-function del:lazarusCheck(player, dmgAmount)
-	local player = player:ToPlayer() --cast Entity to EntityPlayer
+function del:dysmorphiaDamage()
+	local player = Isaac.GetPlayer(0)
+	
+	--Start damage countdown at full charge
+	if player:GetActiveCharge(ActiveSlot.SLOT_POCKET) == Isaac.GetItemConfig():GetCollectible(COLLECTIBLE_DYSMORPHIA).MaxCharges then
+		
+		dysmorphiaTimer = (dysmorphiaTimer - 1) % (dysmorphiaCooldown) --increment, wrap on damage
+		print(dysmorphiaTimer)
+		
+		
+		
+		local sound = SoundEffect.SOUND_HUSH_GROWL
+		local volume = 0.3
+		--TODO: Ugly if chain, FIX
+		if dysmorphiaTimer == 80 then
+			SFXManager():Play(sound, volume, 0, false, 1.5, 0)
+		elseif dysmorphiaTimer == 55 then 
+			SFXManager():Play(sound, volume, 0, false, 2, 0)
+		
+		elseif dysmorphiaTimer == 35 then
+			SFXManager():Play(sound, volume, 0, false, 3, 0)
+		
+		elseif dysmorphiaTimer == 20 then
+			SFXManager():Play(sound, volume, 0, false, 4, 0)
+			
+		elseif dysmorphiaTimer == 10 then
+			SFXManager():Play(sound, volume, 0, false, 5, 0)
+
+		elseif dysmorphiaTimer == 0 then
+			player:TakeDamage(1.0, 0, EntityRef(player), 0) --Take damage from self
+		end
+	end
+end
+del:AddCallback(ModCallbacks.MC_POST_UPDATE, del.dysmorphiaDamage) --30/second
+
+
+function del:lazarusCheck(entity, dmgAmount, flags, source)
+	local player = entity:ToPlayer() --cast Entity to EntityPlayer
 	local hp = player:GetHearts() + player:GetSoulHearts() --health reduction applied after MC_ENTITY_TAKE_DMG
 
 	if player:GetPlayerType() == PlayerType.PLAYER_LAZARUS and hp - dmgAmount == 0 then 
@@ -136,8 +187,8 @@ local json = require("json")
 function del:SaveGame()
 	SaveState.Settings = {}
 	
-	for i, v in pairs(modSettings) do
-		SaveState.Settings[tostring(i)] = modSettings[i]
+	for i, v in pairs(runVariables) do
+		SaveState.Settings[tostring(i)] = runVariables[i]
 	end
 	
     del:SaveData(json.encode(SaveState))
@@ -152,7 +203,7 @@ function del:loadData(isSave)
 		SaveState = json.decode(del:LoadData())	
 		
         for i, v in pairs(SaveState.Settings) do
-			modSettings[tostring(i)] = SaveState.Settings[i]
+			runVariables[tostring(i)] = SaveState.Settings[i]
 		end
     end
 end
