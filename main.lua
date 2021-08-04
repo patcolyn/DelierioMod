@@ -6,6 +6,7 @@ TODO: Remove all player starting items from all pools
 TODO: Fix all non-Delierio characters
 TODO: Settings save across runs
 TODO: Keeper spawning flies from red heart removal
+TODO: Prevent vanilla completion marks
 TODO: Dysmorphia dmg type similar to Breath of Life
 TODO: Player grid trapped check
 ]]--
@@ -17,27 +18,28 @@ require("scripts.playerTables")
 local del = RegisterMod("delierio", 1)
 local SaveState = {}
 
-local validPlayerTypes = {
-	0,
-	1,
-	2,
-	3,
-	4,
-	5,
-	6,
-	7,
-	8,
-	9,
-	10,
-	11,
-	13,
-	14,
-	15,
-	16,
-	18,
-	19
+local playerTypeWhitelist = {
+	PlayerType.PLAYER_ISAAC,
+	PlayerType.PLAYER_MAGDALENA,
+	PlayerType.PLAYER_CAIN,
+	PlayerType.PLAYER_JUDAS,
+	PlayerType.PLAYER_XXX,
+	PlayerType.PLAYER_EVE,
+	PlayerType.PLAYER_SAMSON,
+	PlayerType.PLAYER_AZAZEL,
+	PlayerType.PLAYER_LAZARUS,
+	PlayerType.PLAYER_EDEN,
+	PlayerType.PLAYER_THELOST,
+	PlayerType.PLAYER_LAZARUS2,
+	PlayerType.PLAYER_LILITH,
+	PlayerType.PLAYER_KEEPER,
+	PlayerType.PLAYER_APOLLYON,
+	PlayerType.PLAYER_THEFORGOTTEN,
+	PlayerType.PLAYER_BETHANY,
+	PlayerType.PLAYER_JACOB
 }
 
+--TODO: redo as for-loop
 local spriteSheetLocations = {
 	"gfx/characters/costumes/character_isaac.png",
 	"gfx/characters/costumes/character_magdalene.png",
@@ -57,6 +59,11 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_theforgotten.png",
 	"gfx/characters/costumes/character_bethany.png",
 	"gfx/characters/costumes/character_jacob.png"
+}
+
+local chargeEntityBlacklist = {
+	EntityType.ENTITY_FIREPLACE,
+	EntityType.ENTITY_SHOPKEEPER
 }
 
 local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
@@ -83,7 +90,6 @@ local runVariables = defaultSettings
 ------------------------------Start-----------------------------
 
 function del:onGameStart()
-	
 	lazAlive = true
 	dysmorphiaTimer = defaultCooldown
 end
@@ -106,7 +112,7 @@ function del:dysmorphia(_type, rng, player)
 	end
 	
 	if currentPlayer ~= PlayerType.PLAYER_ESAU then --Esau is rolled for too for SOME REASON
-		local targetPlayer = table.random(validPlayerTypes, {currentPlayer, lazExcludeID}, rng)
+		local targetPlayer = table.random(playerTypeWhitelist, {currentPlayer, lazExcludeID}, rng)
 		
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
 		
@@ -169,8 +175,8 @@ del:AddCallback(ModCallbacks.MC_POST_UPDATE, del.dysmorphiaDamage) --30/second
 
 
 --Allows Lazarus types to swap in-place
-function del:lazarusCheck(entity, dmgAmount, flags, source)
-	local player = entity:ToPlayer() --Cast Entity to EntityPlayer
+function del:lazarusCheck(hitEntity, dmgAmount)
+	local player = hitEntity:ToPlayer() --Cast Entity to EntityPlayer
 	local hp = player:GetHearts() + player:GetSoulHearts() 
 	
 	--Health reduction applied after MC_ENTITY_TAKE_DMG
@@ -182,22 +188,21 @@ del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.EN
 
 
 --4.5v effect based on damage AMOUNT, exclusive for Dysmorphia
-function del:dysmorphiaCharge(entity, dmgAmount, flags, source)
+function del:dysmorphiaCharge(hitEntity, dmgAmount, _flags, dmgSource)
 	local player = Isaac.GetPlayer(0)
 	
-	if source.Type < 10 and player:GetActiveCharge(ActiveSlot.SLOT_POCKET) ~= dysmorphiaMaxCharges then
-		--[[
-		TODO:
-		Account for overkill dmg
-		Clamp to maxcharges
-		Scale based on amount of damage dealt
-		]]--
+	if dmgSource.Type < 10 and
+		player:GetActiveCharge(ActiveSlot.SLOT_POCKET) ~= dysmorphiaMaxCharges and
+		not table.contains(chargeEntityBlacklist, hitEntity.Type) then
+
+		--TODO: Account for overkill dmg
 		local newCharge = player:GetActiveCharge(ActiveSlot.SLOT_POCKET) + math.floor(dmgAmount) + 10 * Game():GetLevel():GetStage() 
 
-		player:SetActiveCharge(newCharge, ActiveSlot.SLOT_POCKET)
+		player:SetActiveCharge(math.clamp(newCharge, 0, dysmorphiaMaxCharges), ActiveSlot.SLOT_POCKET)
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
+
 
 ----------------------------------------------------------------
 ----------------------------Savedata----------------------------
@@ -255,3 +260,8 @@ function table.random(randTable, exclude, rng)
 		return randTable[roll]
 	end
 end
+
+--Clamps a value to given range
+function math.clamp(n, low, high)
+	return math.min(math.max(n, low), high)
+end 
