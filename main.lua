@@ -49,6 +49,7 @@ for i = 1, 60 do
 	backDropList[i] = i
 end
 
+--Backdrops crash the game or are not compatible with a 1x1 room
 backDropBlacklist = {
 	BackdropType.BACKDROP_NULL,
 	BackdropType.MEGA_SATAN,
@@ -60,6 +61,7 @@ backDropBlacklist = {
 	BackdropType.DOGMA,
 	BackdropType.DUNGEON_GIDEON,
 	BackdropType.DUNGEON_ROTGUT,
+	BackdropType.DUNGEON_BEAST,
 	BackdropType.MINES_SHAFT,
 	BackdropType.ASHPIT_SHAFT
 }
@@ -171,8 +173,6 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 ----------------------------------------------------------------
 -----------------------------Clicker----------------------------
-
-testroom = 61
 
 --Main dysmorphia functionality
 function del:dysmorphia(_type, rng, player)
