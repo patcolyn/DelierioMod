@@ -221,6 +221,7 @@ del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA
 
 --------------------------------
 ----------Damage Effect---------
+
 function del:dysmorphiaDamage()
 	local player = Isaac.GetPlayer(0)
 	
@@ -257,6 +258,7 @@ del:AddCallback(ModCallbacks.MC_POST_UPDATE, del.dysmorphiaDamage) --30/second
 
 --------------------------------
 -------------Lazarus------------
+
 function del:lazarusCheck(hitEntity, dmgAmount)
 	local player = hitEntity:ToPlayer() --Cast Entity to EntityPlayer
 	local hp = player:GetHearts() + player:GetSoulHearts() 
@@ -271,6 +273,7 @@ del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.lazarusCheck, EntityType.EN
 
 --------------------------------
 -------------Charge-------------
+
 function del:dysmorphiaCharge(hitEntity, dmgAmount, _flags, dmgSource)
 	local player = Isaac.GetPlayer(0)
 	
@@ -285,6 +288,7 @@ function del:dysmorphiaCharge(hitEntity, dmgAmount, _flags, dmgSource)
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
+
 
 ----------------------------------------------------------------
 -------------------------Health-Tracker-------------------------
