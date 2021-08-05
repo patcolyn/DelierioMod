@@ -295,6 +295,21 @@ del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
 ----------------------------------------------------------------
 -------------------------Health-Tracker-------------------------
 
+--Return formatted health
+function del:returnHealth(player)
+	local health = {
+		red = player:GetHearts(),
+		container = player:GetMaxHearts(),
+		eternal = player:GetEternalHearts(),
+		soul = player:GetSoulHearts(),
+		bone = player:GetBoneHearts(),
+		rotten = player:GetRottenHearts(),
+		broken = player:GetBrokenHearts(),
+		blackBitmask = player:GetBlackHearts()
+	
+	return health
+end
+
 --Stores health history for character conversion
 function del:storeHealthHistory()
 	return history
@@ -335,7 +350,6 @@ function del:SaveGame()
 	
     del:SaveData(json.encode(SaveState))
 end
-
 del:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, del.SaveGame)
 
 
@@ -381,3 +395,18 @@ end
 function math.clamp(n, low, high)
 	return math.min(math.max(n, low), high)
 end
+
+
+--------------------------------
+--------------Debug-------------
+
+function del:onPress()
+	if Input.IsButtonTriggered(Keyboard.KEY_LEFT_ALT, 0) then
+		local str = ""
+		for k, v in pairs(del:returnHealth(Isaac.GetPlayer(0))) do
+			str = str .. " " .. k .. ":" .. tostring(v)
+		end
+		print(str)
+	end
+end
+del:AddCallback(ModCallbacks.MC_POST_RENDER, del.onPress)
