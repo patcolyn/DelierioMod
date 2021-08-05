@@ -162,6 +162,7 @@ local healthHistory = {}
 
 local runVariables = defaultSettings
 
+
 ----------------------------------------------------------------
 ------------------------------Start-----------------------------
 
@@ -218,6 +219,7 @@ function del:dysmorphia(_type, rng, player)
 	end
 end
 del:AddCallback(ModCallbacks.MC_USE_ITEM, del.dysmorphia, COLLECTIBLE_DYSMORPHIA)
+
 
 --------------------------------
 ----------Damage Effect---------
