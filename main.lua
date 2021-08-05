@@ -158,6 +158,8 @@ local defaultSettings = {
 	["dysmorphiaTimer"] = defaultCooldown
 }
 
+local healthHistory = {}
+
 local runVariables = defaultSettings
 
 ----------------------------------------------------------------
@@ -209,6 +211,7 @@ function del:dysmorphia(_type, rng, player)
 		dysmorphiaTimer = defaultCooldown
 		
 		--Screen effects
+		--Game():ShowHallucination(5, table.random(backDropList, backDropBlacklist, rng))
 		Game():Darken(0.9, 20)
 		
 		return true --Play pick up animation
@@ -280,6 +283,33 @@ function del:dysmorphiaCharge(hitEntity, dmgAmount, _flags, dmgSource)
 	end
 end
 del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
+
+----------------------------------------------------------------
+-------------------------Health-Tracker-------------------------
+
+--Stores health history for character conversion
+function del:storeHealthHistory()
+	return history
+end
+
+
+----------------------------------------------------------------
+---------------------------Grid-Check---------------------------
+
+--Create a 2D entity grid
+function del:buildGrid(room)
+	local xMax = room:GetGridWidth()
+	local yMax = room:GetGridHeight()
+	local grid = {}
+	
+	for x = 0, xMax do
+		for y = 0, yMax do
+			grid[x][y] = room:GetGridEntity(x+y)
+		end
+	end
+	
+	return grid
+end
 
 
 ----------------------------------------------------------------
