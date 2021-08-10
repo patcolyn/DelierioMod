@@ -87,6 +87,7 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_jacob.png"
 }
 
+--Blacklist for Dysmorphia charging
 local chargeEntityBlacklist = {
 	EntityType.ENTITY_FIREPLACE,
 	EntityType.ENTITY_SHOPKEEPER
@@ -194,9 +195,7 @@ function del:dysmorphia(_type, rng, player)
 		
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
 		
-		targetPlayerName = player:GetName()
-		--print("From: " .. currentPlayerName .. " To: " .. targetPlayerName)
-		if currentPlayer == targetPlayer then print("AGHHHHHHHHHHHHHHH") end --Please never trigger, I am going mad
+		--print("From: " .. currentPlayerName .. " To: " .. player:GetName())
 		
 		--[[
 		local playerSprite = player:GetSprite()
@@ -212,7 +211,6 @@ function del:dysmorphia(_type, rng, player)
 		dysmorphiaTimer = defaultCooldown
 		
 		--Screen effects
-		--Game():ShowHallucination(5, table.random(backDropList, backDropBlacklist, rng))
 		Game():Darken(0.9, 20)
 		
 		return true --Play pick up animation
@@ -230,12 +228,12 @@ function del:dysmorphiaDamage()
 	--Start damage countdown at full charge
 	if player:GetActiveCharge(ActiveSlot.SLOT_POCKET) == dysmorphiaMaxCharges then
 		
-		dysmorphiaTimer = (dysmorphiaTimer - 1) % (dysmorphiaCooldown) --increment, wrap on damage		
+		dysmorphiaTimer = (dysmorphiaTimer - 1) % dysmorphiaCooldown --increment, wrap on damage		
 		
 		local sound = SoundEffect.SOUND_HUSH_GROWL
 		local volume = 0.3
 
-		--TODO: Ugly if chain, FIX
+		--TODO: Ugly elif chain, FIX
 		if dysmorphiaTimer == 80 then
 			SFXManager():Play(sound, volume, 0, false, 1.5, 0)
 		elseif dysmorphiaTimer == 55 then 
@@ -251,7 +249,7 @@ function del:dysmorphiaDamage()
 			SFXManager():Play(sound, volume, 0, false, 5, 0)
 
 		elseif dysmorphiaTimer == 0 then
-			--player:TakeDamage(1.0, 0, EntityRef(player), 0) --Take damage from self
+			player:TakeDamage(1.0, 0, EntityRef(player), 0) --Take damage from self
 		end
 	end
 end
@@ -311,7 +309,7 @@ function del:returnHealth(player)
 	return health
 end
 
---Stores health history for character conversion
+--Stores health history for character conversion (WIP)
 function del:storeHealthHistory()
 	return history
 end
@@ -320,7 +318,7 @@ end
 ----------------------------------------------------------------
 ---------------------------Grid-Check---------------------------
 
---Create a 2D entity grid
+--Create a 2D entity grid (WIP)
 function del:buildGrid(room)
 	local xMax = room:GetGridWidth()
 	local yMax = room:GetGridHeight()
