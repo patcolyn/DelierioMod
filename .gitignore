@@ -40,3 +40,5 @@ luac.out
 *.hex
 
 .vscode
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
