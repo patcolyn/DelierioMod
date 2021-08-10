@@ -17,8 +17,6 @@ TODO: Player grid trapped check
 ----------------------------------------------------------------
 ------------------------------Init------------------------------
 
-require("scripts.playerTables")
-
 local del = RegisterMod("delierio", 1)
 local SaveState = {}
 
@@ -43,12 +41,12 @@ local playerTypeWhitelist = {
 	PlayerType.PLAYER_JACOB
 }
 
+--Backdrops that crash the game or are not compatible with a 1x1 room
 backDropList = {}
 for i = 1, 60 do
 	backDropList[i] = i
 end
 
---Backdrops crash the game or are not compatible with a 1x1 room
 backDropBlacklist = {
 	BackdropType.BACKDROP_NULL,
 	BackdropType.MEGA_SATAN,
@@ -87,7 +85,7 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_jacob.png"
 }
 
---Blacklist for Dysmorphia charging
+--Blacklist for Dysmorphia charges
 local chargeEntityBlacklist = {
 	EntityType.ENTITY_FIREPLACE,
 	EntityType.ENTITY_SHOPKEEPER
@@ -123,7 +121,7 @@ local startingItems = {
 	PLAYER_LAZARUS = {
 		CollectibleType.COLLECTIBLE_ANEMIC
 	},
-	PLAYER_EDEN = {"AGGGHHHH"},
+	PLAYER_EDEN = {},
 	PLAYER_THELOST = {
 		CollectibleType.COLLECTIBLE_ETERNAL_D6
 	},
@@ -197,6 +195,7 @@ function del:dysmorphia(_type, rng, player)
 		
 		--print("From: " .. currentPlayerName .. " To: " .. player:GetName())
 		
+		--Spritesheet replacements, CTD risk without all sprites
 		--[[
 		local playerSprite = player:GetSprite()
 		playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
@@ -208,11 +207,11 @@ function del:dysmorphia(_type, rng, player)
 		playerSprite:LoadGraphics() --Reload sprites
 		]]--
 		
-		dysmorphiaTimer = defaultCooldown
-		
 		--Screen effects
 		Game():Darken(0.9, 20)
 		
+		dysmorphiaTimer = defaultCooldown
+
 		return true --Play pick up animation
 	end
 end
@@ -390,6 +389,7 @@ function table.random(randTable, exclude, rng)
 	end
 end
 
+
 --Clamps a value to given range
 function math.clamp(n, low, high)
 	return math.min(math.max(n, low), high)
@@ -399,6 +399,7 @@ end
 --------------------------------
 --------------Debug-------------
 
+--Print health values on 'LAlt'
 function del:onPress()
 	if Input.IsButtonTriggered(Keyboard.KEY_LEFT_ALT, 0) then
 		local str = ""
