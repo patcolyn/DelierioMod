@@ -306,6 +306,7 @@ function del:returnHealth(player)
 		rotten = player:GetRottenHearts(),
 		broken = player:GetBrokenHearts(),
 		blackBitmask = player:GetBlackHearts()
+	}
 	
 	return health
 end
