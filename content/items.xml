@@ -5,5 +5,5 @@
 		gfx="dysmorphia.png"
 		hidden="true"
 		chargetype="special"
-		maxcharges="100" />
+		maxcharges="0" />
 </items>

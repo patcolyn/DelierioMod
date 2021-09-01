@@ -13,7 +13,7 @@ TODO: Keeper spawning flies from red heart removal
 TODO: Prevent vanilla completion marks
 TODO: Dysmorphia dmg type similar to Breath of Life
 TODO: Player grid trapped check
-]]--
+]]
 ----------------------------------------------------------------
 ------------------------------Init------------------------------
 
@@ -21,49 +21,28 @@ local del = RegisterMod("delierio", 1)
 local SaveState = {}
 
 local playerTypeWhitelist = {
-	PlayerType.PLAYER_ISAAC,
-	PlayerType.PLAYER_MAGDALENA,
-	PlayerType.PLAYER_CAIN,
-	PlayerType.PLAYER_JUDAS,
-	PlayerType.PLAYER_XXX,
-	PlayerType.PLAYER_EVE,
-	PlayerType.PLAYER_SAMSON,
-	PlayerType.PLAYER_AZAZEL,
-	PlayerType.PLAYER_LAZARUS,
-	PlayerType.PLAYER_EDEN,
-	PlayerType.PLAYER_THELOST,
-	PlayerType.PLAYER_LAZARUS2,
-	PlayerType.PLAYER_LILITH,
-	PlayerType.PLAYER_KEEPER,
-	PlayerType.PLAYER_APOLLYON,
-	PlayerType.PLAYER_THEFORGOTTEN,
-	PlayerType.PLAYER_BETHANY,
-	PlayerType.PLAYER_JACOB
+	PlayerType.PLAYER_ISAAC,		-- 0
+	PlayerType.PLAYER_MAGDALENA,	-- 1
+	PlayerType.PLAYER_CAIN,			-- 2
+	PlayerType.PLAYER_JUDAS,		-- 3
+	PlayerType.PLAYER_XXX,			-- 4
+	PlayerType.PLAYER_EVE,			-- 5
+	PlayerType.PLAYER_SAMSON,		-- 6
+	PlayerType.PLAYER_AZAZEL,		-- 7
+	PlayerType.PLAYER_LAZARUS,		-- 8
+	PlayerType.PLAYER_EDEN,			-- 9
+	PlayerType.PLAYER_THELOST,		--10
+	PlayerType.PLAYER_LAZARUS2,		--11
+									--12
+	PlayerType.PLAYER_LILITH,		--13
+	PlayerType.PLAYER_KEEPER,		--14
+	PlayerType.PLAYER_APOLLYON,		--15
+	PlayerType.PLAYER_THEFORGOTTEN, --16
+									--17
+	PlayerType.PLAYER_BETHANY,		--18
+	PlayerType.PLAYER_JACOB			--19
 }
 
---Backdrops that crash the game or are not compatible with a 1x1 room
-backDropList = {}
-for i = 1, 60 do
-	backDropList[i] = i
-end
-
-backDropBlacklist = {
-	BackdropType.BACKDROP_NULL,
-	BackdropType.MEGA_SATAN,
-	BackdropType.ERROR_ROOM,
-	BackdropType.DUNGEON,
-	BackdropType.PLANETARIUM,
-	BackdropType.CLOSET,
-	BackdropType.CLOSET_B,
-	BackdropType.DOGMA,
-	BackdropType.DUNGEON_GIDEON,
-	BackdropType.DUNGEON_ROTGUT,
-	BackdropType.DUNGEON_BEAST,
-	BackdropType.MINES_SHAFT,
-	BackdropType.ASHPIT_SHAFT
-}
-
---TODO: redo as for-loop
 local spriteSheetLocations = {
 	"gfx/characters/costumes/character_isaac.png",
 	"gfx/characters/costumes/character_magdalene.png",
@@ -77,18 +56,15 @@ local spriteSheetLocations = {
 	"gfx/characters/costumes/character_eden.png",
 	"gfx/characters/costumes/character_thelost.png",
 	"gfx/characters/costumes/character_lazarus2.png",
-	"gfx/characters/costumes/character_lillith.png",
+	"",
+	"gfx/characters/costumes/character_lilith.png",
 	"gfx/characters/costumes/character_keeper.png",
 	"gfx/characters/costumes/character_apollyon.png",
 	"gfx/characters/costumes/character_theforgotten.png",
+	"",
 	"gfx/characters/costumes/character_bethany.png",
-	"gfx/characters/costumes/character_jacob.png"
-}
-
---Blacklist for Dysmorphia charges
-local chargeEntityBlacklist = {
-	EntityType.ENTITY_FIREPLACE,
-	EntityType.ENTITY_SHOPKEEPER
+	"gfx/characters/costumes/character_jacob.png",
+	"gfx/characters/costumes/character_esau.png",
 }
 
 local startingItems = {
@@ -121,7 +97,7 @@ local startingItems = {
 	PLAYER_LAZARUS = {
 		CollectibleType.COLLECTIBLE_ANEMIC
 	},
-	PLAYER_EDEN = {},
+	PLAYER_EDEN = {}, --TODO
 	PLAYER_THELOST = {
 		CollectibleType.COLLECTIBLE_ETERNAL_D6
 	},
@@ -139,6 +115,34 @@ local startingItems = {
 	PLAYER_JACOB = {}
 }
 
+--Backdrops that crash the game or are not compatible with a 1x1 room
+backDropList = {}
+for i = 1, 60 do
+	backDropList[i] = i
+end
+
+backDropBlacklist = {
+	BackdropType.BACKDROP_NULL,
+	BackdropType.MEGA_SATAN,
+	BackdropType.ERROR_ROOM,
+	BackdropType.DUNGEON,
+	BackdropType.PLANETARIUM,
+	BackdropType.CLOSET,
+	BackdropType.CLOSET_B,
+	BackdropType.DOGMA,
+	BackdropType.DUNGEON_GIDEON,
+	BackdropType.DUNGEON_ROTGUT,
+	BackdropType.DUNGEON_BEAST,
+	BackdropType.MINES_SHAFT,
+	BackdropType.ASHPIT_SHAFT
+}
+
+--Blacklist for Dysmorphia charges
+local chargeEntityBlacklist = {
+	EntityType.ENTITY_FIREPLACE,
+	EntityType.ENTITY_SHOPKEEPER
+}
+
 local COLLECTIBLE_DYSMORPHIA = Isaac.GetItemIdByName("Dysmorphia")
 local defaultCooldown = 5*30
 local dysmorphiaCooldown = defaultCooldown --Delay in seconds for damage
@@ -147,6 +151,8 @@ local dysmorphiaMaxCharges = Isaac.GetItemConfig():GetCollectible(COLLECTIBLE_DY
 
 local lazAlive = true
 
+local trueHealth = {}
+local pseudoHealth = {}
 
 ----------------------------------------------------------------
 --------------------------Default-Settings----------------------
@@ -166,8 +172,13 @@ local runVariables = defaultSettings
 ------------------------------Start-----------------------------
 
 function del:onGameStart()
+	player = Isaac.GetPlayer(0)
+	
 	lazAlive = true
 	dysmorphiaTimer = defaultCooldown
+
+	trueHealth = del:returnHealth(player)
+	pseudoHealth = del:returnHealth(player)
 end
 del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
@@ -177,8 +188,7 @@ del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
 --Main dysmorphia functionality
 function del:dysmorphia(_type, rng, player)
-	--buildGrid(Game():GetRoom())
-	
+
 	local currentPlayer = player:GetPlayerType()
 	local currentPlayerName = player:GetName()
 	
@@ -190,22 +200,21 @@ function del:dysmorphia(_type, rng, player)
 	
 	if currentPlayer ~= PlayerType.PLAYER_ESAU then --Esau is rolled for too for SOME REASON
 		local targetPlayer = table.random(playerTypeWhitelist, {currentPlayer, lazExcludeID}, rng)
-		
+
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
 		
 		--print("From: " .. currentPlayerName .. " To: " .. player:GetName())
 		
 		--Spritesheet replacements, CTD risk without all sprites
-		--[[
 		local playerSprite = player:GetSprite()
 		playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
 		
-		for i = 0, 15 do
-			playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer]) --Replace spritesheets
+		for i = 0, 20 do
+			playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer + 1]) --Replace spritesheets
 		end
 
 		playerSprite:LoadGraphics() --Reload sprites
-		]]--
+
 		
 		--Screen effects
 		Game():Darken(0.9, 20)
@@ -227,7 +236,7 @@ function del:dysmorphiaDamage()
 	--Start damage countdown at full charge
 	if player:GetActiveCharge(ActiveSlot.SLOT_POCKET) == dysmorphiaMaxCharges then
 		
-		dysmorphiaTimer = (dysmorphiaTimer - 1) % dysmorphiaCooldown --increment, wrap on damage		
+		--dysmorphiaTimer = (dysmorphiaTimer - 1) % dysmorphiaCooldown --increment, wrap on damage		
 		
 		local sound = SoundEffect.SOUND_HUSH_GROWL
 		local volume = 0.3
@@ -292,8 +301,16 @@ del:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, del.dysmorphiaCharge)
 ----------------------------------------------------------------
 -------------------------Health-Tracker-------------------------
 
+--[[
+	Update trueHealth with fair damage conversion when player hp is modified
+	pseudoHealth is current literal character hp, used for difference comparison after damage
+
+
+]]
+
 --Return formatted health
 function del:returnHealth(player)
+
 	local health = {
 		red = player:GetHearts(),
 		container = player:GetMaxHearts(),
@@ -302,15 +319,30 @@ function del:returnHealth(player)
 		bone = player:GetBoneHearts(),
 		rotten = player:GetRottenHearts(),
 		broken = player:GetBrokenHearts(),
-		blackBitmask = player:GetBlackHearts()
+		blackBitmask = player:GetBlackHearts(),
+		boneBitmask = del:getBoneBitmask(player)
 	}
-	
+
 	return health
 end
 
---Stores health history for character conversion (WIP)
-function del:storeHealthHistory()
-	return history
+
+function del:setHealth(player, health)
+
+end
+
+
+function del:getBoneBitmask(player)
+	local mask = 0
+
+	for i = 1, 12 do
+		 mask = mask << 1
+		if player:IsBoneHeart(i) then
+			mask = mask + 1
+		end
+	end
+
+	return mask
 end
 
 
@@ -380,13 +412,23 @@ end
 
 --Returns a random element in a table
 function table.random(randTable, exclude, rng)
-	local roll = rng:RandomInt(#randTable) + 1
-	
-	if table.contains(exclude, randTable[roll]) then
-		return table.random(randTable, exclude, rng)
-	else
-		return randTable[roll]
+
+	local roll = rng:RandomInt(#randTable - #exclude) + 1
+	table.sort(exclude)
+
+	for _, v in pairs(exclude) do
+		--print("ExTest: " .. randTable[roll] .. " against " .. v)
+		if randTable[roll] >= v then
+			roll = roll + 1		-- skip over excluded values in the codomain
+		end
 	end
+	return randTable[roll]
+
+	--if table.contains(exclude, randTable[roll]) then
+	--	return table.random(randTable, exclude, rng)
+	--else
+	--	return randTable[roll]
+	--end
 end
 
 
@@ -403,10 +445,10 @@ end
 function del:onPress()
 	if Input.IsButtonTriggered(Keyboard.KEY_LEFT_ALT, 0) then
 		local str = ""
-		for k, v in pairs(del:returnHealth(Isaac.GetPlayer(0))) do
+		for k, v in pairs(trueHealth) do
 			str = str .. " " .. k .. ":" .. tostring(v)
 		end
-		print(str)
+		--print(str)
 	end
 end
 del:AddCallback(ModCallbacks.MC_POST_RENDER, del.onPress)
