@@ -1,0 +1,4 @@
+<costumes anm2root="gfx/">
+    <!-- Load order is top to bottom. It is NOT based on the id -->
+    <costume anm2path="characters/some_null_costume.anm2" type="none" />
+</costumes>

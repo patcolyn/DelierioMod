@@ -191,7 +191,7 @@ function del:dysmorphia(_type, rng, player)
 
 	local currentPlayer = player:GetPlayerType()
 	local currentPlayerName = player:GetName()
-	
+
 	--Lazarus' Rags check
 	lazExcludeID = PlayerType.PLAYER_LAZARUS
 	if lazAlive then
@@ -202,20 +202,30 @@ function del:dysmorphia(_type, rng, player)
 		local targetPlayer = table.random(playerTypeWhitelist, {currentPlayer, lazExcludeID}, rng)
 
 		player:ChangePlayerType(targetPlayer) --Call clicker function with target
-		
+
 		--print("From: " .. currentPlayerName .. " To: " .. player:GetName())
 		
 		--Spritesheet replacements, CTD risk without all sprites
 		local playerSprite = player:GetSprite()
-		playerSprite:Load("001.000_player.anm2", true) --Load custom spritesheet
+		playerSprite:Load("001.000_player.anm2", true) --Load custom base spritesheet
 		
 		for i = 0, 20 do
-			playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer + 1]) --Replace spritesheets
+			playerSprite:ReplaceSpritesheet(i, spriteSheetLocations[targetPlayer + 1]) --Replace base spritesheets
+		end
+
+		if player:GetPlayerType() == PlayerType.PLAYER_MAGDALENA then
+			NullItemID = Isaac.GetCostumeIdByPath("gfx/characters/some_null_costume.anm2")
+			player:RemoveSkinCostume()
+			player:AddNullCostume(NullItemID)
+			maggyHairCostume = Isaac.GetItemConfig():GetNullItem(NullItemID) --Storing maggy hair costume
+			playerSprite:Load("characters/character_002_magdalenehead.anm2", true)
+			playerSprite:ReplaceSpritesheet(0, "gfx/characters/costumes/character_maggiesbeautifulgoldenlocks.png")
 		end
 
 		playerSprite:LoadGraphics() --Reload sprites
 
-		
+		playerSprite:ReplaceCostumeSprite(maggyHairCostume, "gfx/characters/costumes/character_maggiesbeautifulgoldenlocks.png", 0)
+
 		--Screen effects
 		Game():Darken(0.9, 20)
 		
