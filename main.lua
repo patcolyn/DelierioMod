@@ -179,6 +179,10 @@ function del:onGameStart()
 
 	trueHealth = del:returnHealth(player)
 	pseudoHealth = del:returnHealth(player)
+
+	if player:GetPlayerType() ~= Isaac.GetPlayerTypeByName("Delierio") then
+		player:SetPocketActiveItem(CollectibleType.COLLECTIBLE_NULL, ActiveSlot.SLOT_POCKET)
+	end
 end
 del:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, del.onGameStart)
 
@@ -215,7 +219,8 @@ function del:dysmorphia(_type, rng, player)
 
 		playerSprite:LoadGraphics() --Reload sprites
 
-		
+		player:ReplaceCostumeSprite(maggyHairCostume, "gfx/characters/costumes/character_maggiesbeautifulgoldenlocks.png", 0)
+
 		--Screen effects
 		Game():Darken(0.9, 20)
 		
